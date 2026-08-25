@@ -3,7 +3,8 @@ import ollama
 
 from chunker import load_text, chunk_text
 from embedder import embed_chunks
-from retriever import retrieve
+from retriever import hybrid_retrieve
+from bm25 import build_bm25_index
 
 SCRIPT_DIR = Path(__file__).parent
 OLLAMA_MODEL = "llama3.2:3b"
@@ -16,10 +17,12 @@ SYSTEM_PROMPT = (
 
 
 def build_prompt(query:str, retrieved_chunks: list[tuple[str, float]]) -> str:
+    """Assemble the retrieved chunks and the user's question into a single prompt for the LLM."""
     context = "\n\n---\n\n".join(chunk for chunk, _score in retrieved_chunks)
     return f"Context:\n{context}\n\nQuestion: {query}"
 
 def generate_answer(query: str, retrieved_chunks: list[tuple[str, float]]) -> str:
+    """Ask the local LLM (via Ollama) to answer the query using only the retrieved chunks as context."""
     prompt = build_prompt(query, retrieved_chunks)
 
     response = ollama.generate(
@@ -38,7 +41,8 @@ if __name__ == "__main__":
     chunk_embeddings = embed_chunks(chunks)
 
     query = input(f"Ask your questions here\n")
-    retrieved_chunks = retrieve(query, chunks, chunk_embeddings)
+    bm25_index = build_bm25_index(chunks)
+    retrieved_chunks = hybrid_retrieve(query, chunks, chunk_embeddings, bm25_index)
 
     answer = generate_answer(query, retrieved_chunks)
 

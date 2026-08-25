@@ -4,11 +4,13 @@ SCRIPT_DIR = Path(__file__).parent
 
 
 def load_text(filepath: str) -> str:
+    """Read the full contents of a text file."""
     with open(filepath, 'r', encoding="utf-8") as f:
         return f.read()
-    
+
 
 def chunk_text(text: str, chunk_size: int=500, overlap: int=50) -> list[str]:
+    """Split text into overlapping fixed-size chunks so retrieval can match focused passages instead of the whole document."""
     chunks = []
     start = 0
     text_length = len(text)
