@@ -1,4 +1,5 @@
 .venv
 rag-from-scratch/__pycache__/
 rag-hybrid-rerank/__pycache__/
+rag-vector-db/__pycache__/
 .env
