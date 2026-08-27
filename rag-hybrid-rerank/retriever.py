@@ -163,28 +163,3 @@ def hybrid_retrieve(query: str, chunks: list[str], chunk_embeddings, bm25_index:
     # fused[:top_k]: built-in list slicing — keep only the top_k best fused
     # results, then map each chunk index back to its actual chunk text.
     return [(chunks[doc_id], score) for doc_id, score in fused[:top_k]]
-
-
-# This block only runs when the script is executed directly
-# (e.g. `python retriever.py`), not when imported as a module elsewhere.
-if __name__ == "__main__":
-    # Build the full path to the sample document living next to this script.
-    sample_path = SCRIPT_DIR / "sample.txt"
-
-    # Read and chunk the sample document, then embed every chunk.
-    text = load_text(sample_path)
-    chunks = chunk_text(text)
-    chunk_embeddings = embed_chunks(chunks)
-
-    query = "What are backend skills?"
-
-    # Build the BM25 keyword index over the same chunks used for embeddings.
-    bm25_index = build_bm25_index(chunks)
-
-    # Run the combined vector + BM25 retrieval for this query.
-    results = hybrid_retrieve(query, chunks, chunk_embeddings, bm25_index)
-
-    # print(): built-in function — display each result's fused score and text.
-    for chunk, score in results:
-        print(f"Score: {score:.4f}")
-        print(f"Chunk: {chunk}\n")

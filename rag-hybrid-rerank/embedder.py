@@ -34,28 +34,3 @@ def embed_chunks(chunks: list[str]):
     # vectors as a NumPy array.
     embeddings = model.encode(chunks)
     return embeddings
-
-
-# This block only runs when the script is executed directly
-# (e.g. `python embedder.py`), not when imported as a module elsewhere.
-if __name__ == "__main__":
-    # Build the full path to the sample document living next to this script.
-    sample_path = SCRIPT_DIR / "sample.txt"
-
-    # Read the raw file contents into a single string.
-    text = load_text(sample_path)
-
-    # Split that string into overlapping chunks using the default sizes.
-    chunks = chunk_text(text)
-
-    # Convert every chunk into its embedding vector.
-    embeddings = embed_chunks(chunks)
-
-    # print(): built-in function that writes text to standard output (the terminal).
-    print(f"Number of chunks: {len(chunks)}")
-    # .shape: NumPy array attribute giving (rows, columns) — here
-    # (number_of_chunks, embedding_dimension).
-    print(f"Embedding shape: {embeddings.shape}")
-    # embeddings[0][:10]: NumPy slicing — take the first embedding vector,
-    # then just its first 10 numbers, so the printout stays short.
-    print(f"First embedding (first 10 values):\n{embeddings[0][:10]}")

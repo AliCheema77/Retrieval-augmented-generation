@@ -65,21 +65,3 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]
         start += chunk_size - overlap
 
     return chunks
-
-
-# This block only runs when the script is executed directly
-# (e.g. `python chunker.py`), not when imported as a module elsewhere.
-if __name__ == "__main__":
-    # Build the full path to the sample document living next to this script.
-    sample_path = SCRIPT_DIR / "sample.txt"
-
-    # Read the raw file contents into a single string.
-    sample_text = load_text(sample_path)
-
-    # Split that string into overlapping chunks using the default sizes.
-    result = chunk_text(sample_text)
-
-    # print(): built-in function that writes text to standard output (the terminal).
-    # len(result) -> how many chunks were produced.
-    print(f"Total chunks: {len(result)}")
-    print("First chunk:\n", result[0])
