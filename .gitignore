@@ -1,3 +1,4 @@
 .venv
 rag-from-scratch/__pycache__/
+rag-hybrid-rerank/__pycache__/
 .env
