@@ -20,12 +20,3 @@ def chunk_text(text: str, chunk_size: int=500, overlap: int=50) -> list[str]:
         start += chunk_size - overlap
         
     return chunks
-
-if __name__ == "__main__":
-    sample_path = SCRIPT_DIR / "sample.txt"
-    sample_text = load_text(sample_path)
-    result = chunk_text(sample_text)
-
-    print(f"Total chunks: {len(result)}")
-    print("First chunk:\n", result[0])
-    

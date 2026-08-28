@@ -30,17 +30,3 @@ def retrieve(query: str, chunks: list[str], chunk_embeddings, top_k: int = 3):
         top_chunks.append((chunks[i], score))
 
     return top_chunks
-
-
-if __name__ == "__main__":
-    sample_path = SCRIPT_DIR / "sample.txt"
-    text = load_text(sample_path)
-    chunks = chunk_text(text)
-    chunk_embeddings = embed_chunks(chunks)
-
-    query = "What are backend skills?"
-    results = retrieve(query, chunks, chunk_embeddings)
-
-    for chunk, score in results:
-        print(f"Score: {score:.4f}")
-        print(f"Chunk: {chunk}\n")

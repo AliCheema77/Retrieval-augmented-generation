@@ -10,14 +10,3 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 def embed_chunks(chunks: list[str]):
     embeddings = model.encode(chunks)
     return embeddings
-
-if __name__ == "__main__":
-    sample_path = SCRIPT_DIR / "sample.txt"
-    text = load_text(sample_path)
-    chunks = chunk_text(text)
-
-    embeddings = embed_chunks(chunks)
-
-    print(f"Number of chunks: {len(chunks)}")
-    print(f"Embedding shape: {embeddings.shape}")
-    print(f"First embedding (first 10 values):\n{embeddings[0][:10]}")
