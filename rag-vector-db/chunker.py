@@ -27,41 +27,52 @@ def load_text(filepath: str) -> str:
         return f.read()
 
 
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
+def chunk_text(text: str, chunk_size: int = 700, overlap: int = 70) -> list[str]:
     """
-    Split a long piece of text into smaller, overlapping fixed-size chunks.
-
-    This exists because embedding/retrieval models work best on short,
-    focused passages rather than an entire document — chunking lets the
-    retriever later match a query against a specific paragraph-sized piece
-    instead of the whole text at once.
-
-    Parameters:
-        text: the full text to split.
-        chunk_size: number of characters per chunk.
-        overlap: number of characters shared between consecutive chunks,
-            so a sentence that gets cut at a chunk boundary still appears
-            in full inside at least one neighboring chunk (prevents losing
-            context right at the cut point).
-
-    Returns:
-        A list of chunk strings, in order, covering the whole input text.
+    Split text into chunks that respect line boundaries instead of cutting
+    mid-line, packing consecutive lines together up to chunk_size and only
+    falling back to a hard character cut if a single line itself exceeds
+    chunk_size.
     """
+    lines = text.split("\n")
     chunks = []
-    start = 0
-    # len(): built-in function returning the number of characters in the string.
-    text_length = len(text)
+    current_lines = []
+    current_length = 0
 
-    while start < text_length:
-        end = start + chunk_size
-        # Python string slicing: text[start:end] extracts characters from
-        # index `start` up to (but not including) index `end`. If `end`
-        # exceeds the string length, Python just slices to the end safely.
-        chunk = text[start: end]
-        chunks.append(chunk)
-        # Advance the window by (chunk_size - overlap) instead of chunk_size,
-        # so the next chunk re-includes the last `overlap` characters of
-        # this one — that's what creates the overlap between chunks.
-        start += chunk_size - overlap
+    for line in lines:
+        line_length = len(line) + 1  # +1 for the newline that rejoins it
+
+        # A single line longer than chunk_size can't be packed with anything
+        # else — flush what we have, then hard-cut this one line as a fallback.
+        if line_length > chunk_size:
+            if current_lines:
+                chunks.append("\n".join(current_lines))
+                current_lines = []
+                current_length = 0
+            for start in range(0, len(line), chunk_size):
+                chunks.append(line[start:start + chunk_size])
+            continue
+
+        # Adding this line would overflow the current chunk — close it out,
+        # then carry the last few lines forward into the next chunk as overlap.
+        if current_length + line_length > chunk_size and current_lines:
+            chunks.append("\n".join(current_lines))
+
+            overlap_lines = []
+            overlap_length = 0
+            for prev_line in reversed(current_lines):
+                if overlap_length + len(prev_line) + 1 > overlap:
+                    break
+                overlap_lines.insert(0, prev_line)
+                overlap_length += len(prev_line) + 1
+
+            current_lines = overlap_lines
+            current_length = overlap_length
+
+        current_lines.append(line)
+        current_length += line_length
+
+    if current_lines:
+        chunks.append("\n".join(current_lines))
 
     return chunks
