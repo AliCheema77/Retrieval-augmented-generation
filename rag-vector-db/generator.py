@@ -2,7 +2,6 @@ from pathlib import Path        # Path: object-oriented filesystem paths (built-
 import ollama                   # Python client for talking to the local Ollama server (ollama.generate, etc.)
 
 from chunker import load_text, chunk_text
-from embedder import embed_chunks
 from retriever import hybrid_retrieve
 from bm25 import build_bm25_index
 from reranker import rerank
@@ -98,11 +97,6 @@ if __name__ == "__main__":
     # pieces ("chunks") suitable for embedding and retrieval (from chunker.py).
     chunks = chunk_text(text)
 
-    # embed_chunks(): converts each text chunk into a numeric vector embedding
-    # so we can later compare it against the query using vector similarity
-    # (from embedder.py).
-    chunk_embeddings = embed_chunks(chunks)
-
     # input(): built-in function that pauses execution, prints the given
     # prompt string, and waits for the user to type a line and press Enter;
     # returns whatever the user typed as a string.
@@ -116,7 +110,7 @@ if __name__ == "__main__":
     # hybrid_retrieve(): combines vector similarity search and BM25 keyword
     # search to pull the top_k=15 most relevant candidate chunks for the
     # query (from retriever.py). Returns (chunk, score) tuples.
-    candidate_chunks = hybrid_retrieve(query, chunks, chunk_embeddings, bm25_index, top_k=15)
+    candidate_chunks = hybrid_retrieve(query, chunks, bm25_index, top_k=15)
 
     # rerank(): takes the 15 candidates and re-scores/re-orders them using a
     # (presumably more accurate but slower) reranking model, keeping only the

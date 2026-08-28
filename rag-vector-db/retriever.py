@@ -4,7 +4,7 @@ from pathlib import Path
 from chunker import load_text, chunk_text
 from embedder import model, embed_chunks
 from bm25 import build_bm25_index, bm25_search
-from vectorstore import index_chunks, vector_search
+from vectorstore import vector_search, ensure_indexed
 
 SCRIPT_DIR = Path(__file__).parent
 
@@ -97,12 +97,12 @@ def reciprocal_rank_fusion(rankings: list[list[int]], k: int = 60) -> list[tuple
     return sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)
 
 
-def hybrid_retrieve(query: str, chunks: list[str], chunk_embeddings, bm25_index: dict, top_k: int = 3):
+def hybrid_retrieve(query: str, chunks: list[str], bm25_index: dict, top_k: int = 3):
     """Combine semantic (Chroma vector) and keyword (BM25) search via reciprocal rank fusion."""
     query_embedding = model.encode(query)
 
-    # Make sure this corpus is stored in Chroma (no-op after the first run).
-    index_chunks(chunks, chunk_embeddings)
+    # Embeds and stores the corpus in Chroma only the first time; a no-op after that.
+    ensure_indexed(chunks)
 
     # RRF needs a full ranking from each method to fuse fairly, so ask
     # Chroma to rank every chunk rather than just a small top_k slice.

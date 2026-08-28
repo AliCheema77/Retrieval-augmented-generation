@@ -1,6 +1,8 @@
 from pathlib import Path
 import chromadb
 
+from embedder import embed_chunks
+
 SCRIPT_DIR = Path(__file__).parent
 CHROMA_DIR = SCRIPT_DIR / "chroma_store"
 
@@ -16,13 +18,11 @@ client = chromadb.PersistentClient(path=str(CHROMA_DIR))
 collection = client.get_or_create_collection(name="chunks")
 
 
-def index_chunks(chunks: list[str], chunk_embeddings) -> None:
-    """Store chunks + their embeddings in Chroma, skipping if already indexed."""
-    # If the collection already has items, this corpus was indexed in an
-    # earlier run — skip re-adding so repeated runs don't create duplicates.
+def ensure_indexed(chunks: list[str]) -> None:
+    """Embed and store chunks in Chroma, but only the first time — skip entirely if already indexed."""
     if collection.count() > 0:
         return
-
+    chunk_embeddings = embed_chunks(chunks)
     collection.add(
         ids=[str(i) for i in range(len(chunks))],
         documents=chunks,

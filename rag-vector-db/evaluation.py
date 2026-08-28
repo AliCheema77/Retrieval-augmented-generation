@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from chunker import load_text, chunk_text
-from embedder import embed_chunks
 from bm25 import build_bm25_index
 from retriever import hybrid_retrieve
 from reranker import rerank
@@ -49,7 +48,7 @@ TEST_CASES = [
 ]
 
 
-def evaluate(test_cases, chunks, chunk_embeddings, bm25_index, top_k=3):
+def evaluate(test_cases, chunks, bm25_index, top_k=3):
     """Run the retrieval pipeline on each test case and score how well it found the right chunk."""
     results = []
 
@@ -57,7 +56,7 @@ def evaluate(test_cases, chunks, chunk_embeddings, bm25_index, top_k=3):
         question = case["question"]
         expected = case["expected_substring"]
 
-        candidates = hybrid_retrieve(question, chunks, chunk_embeddings, bm25_index, top_k=15)
+        candidates = hybrid_retrieve(question, chunks, bm25_index, top_k=15)
         reranked = rerank(question, candidates, top_k=top_k)
 
         # Find the rank (1-based position) of the first chunk containing
@@ -85,10 +84,9 @@ if __name__ == "__main__":
     sample_path = SCRIPT_DIR / "sample.txt"
     text = load_text(sample_path)
     chunks = chunk_text(text)
-    chunk_embeddings = embed_chunks(chunks)
     bm25_index = build_bm25_index(chunks)
 
-    results = evaluate(TEST_CASES, chunks, chunk_embeddings, bm25_index)
+    results = evaluate(TEST_CASES, chunks, bm25_index)
 
     for r in results:
         status = f"rank {r['rank']}" if r["rank"] else "MISS"
