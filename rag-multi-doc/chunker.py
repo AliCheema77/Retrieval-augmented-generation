@@ -5,6 +5,14 @@ from pathlib import Path        # Path: object-oriented filesystem paths (built-
 SCRIPT_DIR = Path(__file__).parent
 
 
+def load_documents(directory) -> list[tuple[str, str]]:
+    """Load every .txt file in a directory, returning (filename, text) pairs."""
+    documents = []
+    for filepath in sorted(Path(directory).glob("*.txt")):
+        documents.append((filepath.name, load_text(filepath)))
+    return documents
+
+
 def load_text(filepath: str) -> str:
     """
     Read the entire contents of a text file into memory as a single string.

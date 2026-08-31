@@ -88,7 +88,7 @@ def generate_answer(query: str, retrieved_chunks: list[tuple[str, float]]) -> st
 # (e.g. `python generator.py`), not when imported as a module elsewhere.
 if __name__ == "__main__":
     # Build the full path to the sample document living next to this script.
-    sample_path = SCRIPT_DIR / "sample.txt"
+    sample_path = SCRIPT_DIR / "documents"
 
     # load_text(): reads the raw text content of the sample file (from chunker.py).
     text = load_text(sample_path)
