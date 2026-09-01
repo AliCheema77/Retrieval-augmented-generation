@@ -14,7 +14,7 @@ from sentence_transformers import CrossEncoder  # CrossEncoder: loads a pretrain
 cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 
-def rerank(query: str, candidates: list[tuple[str, float]], top_k: int = 3) -> list[tuple[str, float]]:
+def rerank(query: str, candidates: list[tuple[str, float, str]], top_k: int = 3) -> list[tuple[str, float, str]]:
     """
     Re-score a shortlist of candidate chunks using a cross-encoder, then
     keep only the true top-k most relevant ones.
@@ -25,38 +25,28 @@ def rerank(query: str, candidates: list[tuple[str, float]], top_k: int = 3) -> l
     a cross-encoder would be too slow.
 
     Parameters:
-        candidates: list of (chunk_text, prior_score) tuples from the
-            earlier retrieval stage. The prior_score is discarded here since
-            the cross-encoder produces its own, more reliable relevance score.
+        candidates: list of (chunk_text, prior_score, source) tuples from
+            the earlier retrieval stage. The prior_score is discarded here
+            since the cross-encoder produces its own, more reliable score;
+            source (which document the chunk came from) is carried through
+            unchanged so it can be shown alongside the final answer.
         top_k: how many chunks to keep after reranking.
 
     Returns:
-        A list of (chunk_text, cross_encoder_score) tuples, sorted best
-        match first, truncated to top_k.
+        A list of (chunk_text, cross_encoder_score, source) tuples, sorted
+        best match first, truncated to top_k.
     """
-    # Build a (query, chunk) pair for every candidate — this is the input
-    # format CrossEncoder.predict() expects, since it scores each pair
-    # jointly rather than encoding query and chunk independently.
-    # "for chunk, _score in candidates" unpacks each tuple, discarding the
-    # earlier stage's score (named `_score` to mark it as intentionally unused).
-    pairs = [(query, chunk) for chunk, _score in candidates]
-
-    # cross_encoder.predict(): CrossEncoder built-in method — runs the model
-    # over every (query, chunk) pair and returns a relevance score for each.
+    pairs = [(query, chunk) for chunk, _score, _source in candidates]
     scores = cross_encoder.predict(pairs)
 
-    # zip(): built-in function that pairs up two equal-length sequences
-    # element-by-element — here, each chunk's text with its new
-    # cross-encoder score.
-    #
-    # sorted(): built-in function returning a new sorted list.
-    #   key=lambda x: x[1]  -> sort by the cross-encoder score
-    #   reverse=True        -> highest (most relevant) score first
     reranked = sorted(
-        zip([chunk for chunk, _score in candidates], scores),
+        zip(
+            [chunk for chunk, _score, _source in candidates],
+            scores,
+            [source for _chunk, _score, source in candidates],
+        ),
         key=lambda x: x[1],
         reverse=True,
     )
 
-    # reranked[:top_k]: built-in list slicing — keep only the top_k best results.
     return reranked[:top_k]

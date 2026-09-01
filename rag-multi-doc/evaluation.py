@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from chunker import load_text, chunk_text
+from chunker import load_documents, chunk_documents
 from bm25 import build_bm25_index
 from retriever import hybrid_retrieve
 from reranker import rerank
@@ -45,10 +45,19 @@ TEST_CASES = [
 
     {"question": "What is Ali's educational background?",
      "expected_substring": "Master of Computer Science (MCS)"},
+
+    {"question": "How many days per week can employees work remotely?",
+     "expected_substring": "up to 4 days per week"},
+
+    {"question": "How much is the home office equipment stipend?",
+     "expected_substring": "$300 stipend"},
+
+    {"question": "How many PTO days do employees accrue per month?",
+     "expected_substring": "1.5 days of PTO per month"},
 ]
 
 
-def evaluate(test_cases, chunks, bm25_index, top_k=3):
+def evaluate(test_cases, chunks, metadatas, bm25_index, top_k=3):
     """Run the retrieval pipeline on each test case and score how well it found the right chunk."""
     results = []
 
@@ -56,13 +65,13 @@ def evaluate(test_cases, chunks, bm25_index, top_k=3):
         question = case["question"]
         expected = case["expected_substring"]
 
-        candidates = hybrid_retrieve(question, chunks, bm25_index, top_k=15)
+        candidates = hybrid_retrieve(question, chunks, metadatas, bm25_index, top_k=15)
         reranked = rerank(question, candidates, top_k=top_k)
 
         # Find the rank (1-based position) of the first chunk containing
         # the expected substring; None if it's not in the top_k at all.
         rank = None
-        for i, (chunk, _score) in enumerate(reranked, start=1):
+        for i, (chunk, _score, _source) in enumerate(reranked, start=1):
             if expected.lower() in chunk.lower():
                 rank = i
                 break
@@ -81,12 +90,11 @@ def summarize(results):
 
 
 if __name__ == "__main__":
-    sample_path = SCRIPT_DIR / "sample.txt"
-    text = load_text(sample_path)
-    chunks = chunk_text(text)
+    documents = load_documents(SCRIPT_DIR / "documents")
+    chunks, metadatas = chunk_documents(documents)
     bm25_index = build_bm25_index(chunks)
 
-    results = evaluate(TEST_CASES, chunks, bm25_index)
+    results = evaluate(TEST_CASES, chunks, metadatas, bm25_index)
 
     for r in results:
         status = f"rank {r['rank']}" if r["rank"] else "MISS"

@@ -1,13 +1,13 @@
 from pathlib import Path        # Path: object-oriented filesystem paths (built-in pathlib)
 import ollama                   # Python client for talking to the local Ollama server (ollama.generate, etc.)
 
-from chunker import load_text, chunk_text
+from chunker import load_documents, chunk_documents
 from retriever import hybrid_retrieve
 from bm25 import build_bm25_index
 from reranker import rerank
 
 # __file__ is the path to this script; .parent gives its containing directory.
-# Used so file paths (like sample.txt) work regardless of where the script is run from.
+# Used so file paths (like documents/) work regardless of where the script is run from.
 SCRIPT_DIR = Path(__file__).parent
 
 # Name of the local model Ollama should use to generate answers.
@@ -23,43 +23,34 @@ SYSTEM_PROMPT = (
 )
 
 
-def build_prompt(query: str, retrieved_chunks: list[tuple[str, float]]) -> str:
+def build_prompt(query: str, retrieved_chunks: list[tuple[str, float, str]]) -> str:
     """
     Turn the retrieved chunks + user question into the final text prompt
     that gets sent to the LLM.
 
     Parameters:
         query: the raw question typed by the user.
-        retrieved_chunks: a list of (chunk_text, relevance_score) tuples,
-            already selected and ranked by the retriever/reranker pipeline.
-            We only need the chunk text here — the score was just used
-            earlier to decide which chunks made the cut.
+        retrieved_chunks: a list of (chunk_text, relevance_score, source)
+            tuples, already selected and ranked by the retriever/reranker
+            pipeline. The score isn't needed here; the source (which
+            document the chunk came from) is included so the model — and
+            you — can see where each piece of context came from.
 
     Returns:
         A single string combining all the context chunks and the question,
         formatted so the LLM can clearly tell context apart from the question.
     """
-    # "\n\n---\n\n".join(...) : built-in str.join() method — concatenates all
-    # chunk strings into one string, inserting "\n\n---\n\n" between each pair
-    # as a visual separator so the model can distinguish separate chunks.
-    #
-    # "for chunk, _score in retrieved_chunks" unpacks each (chunk, score) tuple;
-    # we only use `chunk` and throw away the score (conventionally named
-    # `_score` to signal "intentionally unused").
-    context = "\n\n---\n\n".join(chunk for chunk, _score in retrieved_chunks)
-
-    # f-string (built-in Python formatted string literal) to interleave the
-    # context and the question into the final prompt text.
+    context = "\n\n---\n\n".join(f"[Source: {source}]\n{chunk}" for chunk, _score, source in retrieved_chunks)
     return f"Context:\n{context}\n\nQuestion: {query}"
 
 
-def generate_answer(query: str, retrieved_chunks: list[tuple[str, float]]) -> str:
+def generate_answer(query: str, retrieved_chunks: list[tuple[str, float, str]]) -> str:
     """
     Send the assembled prompt to the local Ollama model and return its answer.
 
     Parameters:
         query: the raw question typed by the user.
-        retrieved_chunks: the top-ranked (chunk, score) pairs to use as context.
+        retrieved_chunks: the top-ranked (chunk, score, source) triples to use as context.
 
     Returns:
         The plain-text answer string produced by the LLM.
@@ -87,15 +78,14 @@ def generate_answer(query: str, retrieved_chunks: list[tuple[str, float]]) -> st
 # This block only runs when the script is executed directly
 # (e.g. `python generator.py`), not when imported as a module elsewhere.
 if __name__ == "__main__":
-    # Build the full path to the sample document living next to this script.
-    sample_path = SCRIPT_DIR / "documents"
+    # load_documents(): reads every .txt file in documents/, returning
+    # (filename, text) pairs (from chunker.py).
+    documents = load_documents(SCRIPT_DIR / "documents")
 
-    # load_text(): reads the raw text content of the sample file (from chunker.py).
-    text = load_text(sample_path)
-
-    # chunk_text(): splits the raw text into smaller overlapping/non-overlapping
-    # pieces ("chunks") suitable for embedding and retrieval (from chunker.py).
-    chunks = chunk_text(text)
+    # chunk_documents(): chunks each document separately, returning parallel
+    # (chunks, metadatas) lists so every chunk stays tagged with which
+    # document it came from (from chunker.py).
+    chunks, metadatas = chunk_documents(documents)
 
     # input(): built-in function that pauses execution, prints the given
     # prompt string, and waits for the user to type a line and press Enter;
@@ -109,8 +99,8 @@ if __name__ == "__main__":
 
     # hybrid_retrieve(): combines vector similarity search and BM25 keyword
     # search to pull the top_k=15 most relevant candidate chunks for the
-    # query (from retriever.py). Returns (chunk, score) tuples.
-    candidate_chunks = hybrid_retrieve(query, chunks, bm25_index, top_k=15)
+    # query (from retriever.py). Returns (chunk, score, source) tuples.
+    candidate_chunks = hybrid_retrieve(query, chunks, metadatas, bm25_index, top_k=15)
 
     # rerank(): takes the 15 candidates and re-scores/re-orders them using a
     # (presumably more accurate but slower) reranking model, keeping only the

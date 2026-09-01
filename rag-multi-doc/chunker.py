@@ -33,6 +33,24 @@ def load_text(filepath: str) -> str:
         # f.read(): built-in file-object method that reads the whole file
         # at once and returns it as a single string.
         return f.read()
+    
+
+def chunk_documents(documents: list[tuple[str, str]], chunk_size: int = 700, overlap: int = 70) -> tuple[list[str], list[dict]]:
+    """
+    Chunk multiple documents, keeping track of which document each chunk
+    came from via parallel metadata.
+
+    Returns:
+        (chunks, metadatas) — two parallel lists; metadatas[i] = {"source": filename}
+        tells you which document chunks[i] came from.
+    """
+    chunks = []
+    metadatas = []
+    for filename, text in documents:
+        doc_chunks = chunk_text(text, chunk_size=chunk_size, overlap=overlap)
+        chunks.extend(doc_chunks)
+        metadatas.extend({"source": filename} for _ in doc_chunks)
+    return chunks, metadatas
 
 
 def chunk_text(text: str, chunk_size: int = 700, overlap: int = 70) -> list[str]:

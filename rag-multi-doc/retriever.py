@@ -97,12 +97,12 @@ def reciprocal_rank_fusion(rankings: list[list[int]], k: int = 60) -> list[tuple
     return sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)
 
 
-def hybrid_retrieve(query: str, chunks: list[str], bm25_index: dict, top_k: int = 3):
+def hybrid_retrieve(query: str, chunks: list[str], metadatas: list[dict], bm25_index: dict, top_k: int = 3):
     """Combine semantic (Chroma vector) and keyword (BM25) search via reciprocal rank fusion."""
     query_embedding = model.encode(query)
 
     # Embeds and stores the corpus in Chroma only the first time; a no-op after that.
-    ensure_indexed(chunks)
+    ensure_indexed(chunks, metadatas)
 
     # RRF needs a full ranking from each method to fuse fairly, so ask
     # Chroma to rank every chunk rather than just a small top_k slice.
@@ -112,4 +112,4 @@ def hybrid_retrieve(query: str, chunks: list[str], bm25_index: dict, top_k: int 
 
     fused = reciprocal_rank_fusion([vector_ranking, bm25_ranking])
 
-    return [(chunks[doc_id], score) for doc_id, score in fused[:top_k]]
+    return [(chunks[doc_id], score, metadatas[doc_id]["source"]) for doc_id, score in fused[:top_k]]

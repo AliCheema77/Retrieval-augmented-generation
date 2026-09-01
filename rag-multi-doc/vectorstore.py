@@ -18,8 +18,8 @@ client = chromadb.PersistentClient(path=str(CHROMA_DIR))
 collection = client.get_or_create_collection(name="chunks")
 
 
-def ensure_indexed(chunks: list[str]) -> None:
-    """Embed and store chunks in Chroma, but only the first time — skip entirely if already indexed."""
+def ensure_indexed(chunks: list[str], metadatas: list[dict]) -> None:
+    """Embed and store chunks + their source metadata in Chroma, but only the first time."""
     if collection.count() > 0:
         return
     chunk_embeddings = embed_chunks(chunks)
@@ -27,6 +27,7 @@ def ensure_indexed(chunks: list[str]) -> None:
         ids=[str(i) for i in range(len(chunks))],
         documents=chunks,
         embeddings=chunk_embeddings.tolist(),
+        metadatas=metadatas,
     )
 
 
