@@ -12,12 +12,15 @@ REWRITE_SYSTEM_PROMPT = (
 
 def rewrite_query(query: str, history: list[tuple[str, str]]) -> str:
     """Resolve references in `query` (e.g. "that", "it") using prior turns."""
+    # On the first turn there's nothing to resolve against, so skip the LLM
+    # call entirely rather than asking it to rewrite a question that already
+    # stands on its own.
     if not history:
         return query
-    
+
     history_text = "\n".join(f"User: {q}\nAssistant: {a}" for q, a in history)
     prompt = f"Chat History:\n{history_text}\n\nFollow-up question: {query}\n\nStandalone question:"
-    
+
     response = ollama.generate(
         model=OLLAMA_MODEL,
         system=REWRITE_SYSTEM_PROMPT,

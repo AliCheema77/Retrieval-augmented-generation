@@ -55,6 +55,9 @@ def evaluate(test_cases, chunks, metadatas, bm25_index, top_k=3):
 
             results.append({"question": question, "rewritten": standalone_question, "rank": rank})
 
+            # A real generated answer — not the expected_substring — goes into
+            # history, so later turns in this conversation get rewritten
+            # against the same context a live run would actually produce.
             answer = generate_answer(standalone_question, reranked)
             history.append((question, answer))
 

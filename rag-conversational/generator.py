@@ -83,6 +83,8 @@ if __name__ == "__main__":
     chunks, metadatas = chunk_documents(documents)
     bm25_index = build_bm25_index(chunks)
 
+    # Grows one (raw_query, answer) tuple per turn. rewrite_query() reads
+    # this to resolve references in later questions (e.g. "it", "there").
     history = []
 
     while True:
@@ -94,10 +96,14 @@ if __name__ == "__main__":
         if standalone_query != query:
             print(f"(rewritten as: {standalone_query})")
 
+        # Retrieval, reranking, and generation all run on the *rewritten*
+        # query, not the raw one — that's the whole point of rewriting it.
         candidate_chunks = hybrid_retrieve(standalone_query, chunks, metadatas, bm25_index, top_k=15)
         retrieved_chunks = rerank(standalone_query, candidate_chunks, top_k=3)
         answer = generate_answer(standalone_query, retrieved_chunks)
 
         print(f"\nAnswer:\n{answer}\n")
 
+        # Store the raw query (not the rewritten one) so the history stays
+        # a readable log of what was actually typed.
         history.append((query, answer))
