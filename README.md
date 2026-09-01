@@ -1,6 +1,6 @@
 # Retrieval-augmented-generation
 
-A step-by-step, from-scratch exploration of RAG (Retrieval-Augmented Generation), built in plain Python with no frameworks, progressing from a naive pipeline to a hybrid-search-and-rerank pipeline with persistent vector storage and multi-document retrieval.
+A step-by-step, from-scratch exploration of RAG (Retrieval-Augmented Generation), built in plain Python with no frameworks, progressing from a naive pipeline to a hybrid-search-and-rerank pipeline with persistent vector storage, multi-document retrieval, and multi-turn conversation support.
 
 Each subfolder is a self-contained stage — see its own README for details.
 
@@ -10,6 +10,7 @@ Each subfolder is a self-contained stage — see its own README for details.
 | 2. Hybrid + rerank | [`rag-hybrid-rerank/`](rag-hybrid-rerank/README.md) | BM25 keyword search, Reciprocal Rank Fusion, cross-encoder reranking, retrieval evaluation (Hit Rate@k, MRR) |
 | 3. Vector DB | [`rag-vector-db/`](rag-vector-db/README.md) | Persistent storage via Chroma (HNSW ANN search), chunking-strategy experimentation |
 | 4. Multi-doc | [`rag-multi-doc/`](rag-multi-doc/README.md) | Multi-document loading, per-chunk source metadata carried through the whole pipeline |
+| 5. Conversational | [`rag-conversational/`](rag-conversational/README.md) | Multi-turn conversation loop, LLM-based query rewriting to resolve follow-up references before retrieval |
 
 All stages use a local Ollama model (`llama3.2:3b`) for generation — no external API calls or keys required.
 
