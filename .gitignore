@@ -4,4 +4,5 @@ rag-hybrid-rerank/__pycache__/
 rag-vector-db/__pycache__/
 rag-multi-doc/__pycache__/
 rag-conversational/__pycache__/
+rag-query-transform/__pycache__/
 .env

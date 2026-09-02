@@ -11,6 +11,7 @@ Each subfolder is a self-contained stage — see its own README for details.
 | 3. Vector DB | [`rag-vector-db/`](rag-vector-db/README.md) | Persistent storage via Chroma (HNSW ANN search), chunking-strategy experimentation |
 | 4. Multi-doc | [`rag-multi-doc/`](rag-multi-doc/README.md) | Multi-document loading, per-chunk source metadata carried through the whole pipeline |
 | 5. Conversational | [`rag-conversational/`](rag-conversational/README.md) | Multi-turn conversation loop, LLM-based query rewriting to resolve follow-up references before retrieval |
+| 6. Query transform | [`rag-query-transform/`](rag-query-transform/README.md) | Multi-query expansion fused via RRF, head-to-head retriever evaluation |
 
 All stages use a local Ollama model (`llama3.2:3b`) for generation — no external API calls or keys required.
 
