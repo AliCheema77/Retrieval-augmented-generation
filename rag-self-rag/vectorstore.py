@@ -43,5 +43,5 @@ def vector_search(query_embedding, top_k: int) -> list[int]:
 
     # results["ids"] holds one list of matches per query we sent; since we
     # only sent one, we read index [0]. Ids were stored as strings, so they
-    # need converting back to int to match the chunks list's indices
+    # need converting back to int to match the chunks list's indices.
     return [int(doc_id) for doc_id in results["ids"][0]]
