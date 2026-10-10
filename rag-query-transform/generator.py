@@ -93,8 +93,8 @@ if __name__ == "__main__":
             break
 
         standalone_query = rewrite_query(query, history)
-        # if standalone_query != query:
-        #     print(f"(rewritten as: {standalone_query})")
+        if standalone_query != query:
+            print(f"(rewritten as: {standalone_query})")
 
         # Retrieval, reranking, and generation all run on the *rewritten*
         # query, not the raw one — that's the whole point of rewriting it.
