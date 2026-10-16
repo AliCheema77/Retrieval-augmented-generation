@@ -1,10 +1,4 @@
 .venv
-rag-from-scratch/__pycache__/
-rag-hybrid-rerank/__pycache__/
-rag-vector-db/__pycache__/
-rag-multi-doc/__pycache__/
-rag-conversational/__pycache__/
-rag-query-transform/__pycache__/
-rag-self-rag/__pycache__/
+__pycache__/
 .idea/
 .env
