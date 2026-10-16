@@ -19,4 +19,4 @@ def grade_relevance(query: str, chunk: str) -> bool:
         prompt=prompt
     )
     
-    return response["response"].stript().lower().startswith("yes")
+    return response["response"].strip().lower().startswith("yes")

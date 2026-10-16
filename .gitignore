@@ -6,4 +6,5 @@ rag-multi-doc/__pycache__/
 rag-conversational/__pycache__/
 rag-query-transform/__pycache__/
 rag-self-rag/__pycache__/
+.idea/
 .env
