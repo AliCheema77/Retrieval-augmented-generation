@@ -1,5 +1,7 @@
+from lib2to3.fixes.fix_input import context
 from operator import itemgetter
 from pathlib import Path
+from unittest import result
 
 from dotenv import load_dotenv
 from langchain_chroma import Chroma
@@ -56,7 +58,7 @@ def get_vector_store():
     vector_store = Chroma(
         collection_name="documents",
         embedding_function=embeddings,
-        persist_directory=str(CHROMA_DIR)
+        persist_directory=str(CHROMA_DIR),
     )
 
     if not vector_store.get(limit=1)["ids"]:
@@ -64,7 +66,7 @@ def get_vector_store():
             str(DOCS_DIR),
             glob="*.txt",
             loader_cls=TextLoader,
-            loader_kwargs={"encoding": "utf-8"}
+            loader_kwargs={"encoding": "utf-8"},
         )
         documents = loader.load()
         splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
@@ -76,11 +78,44 @@ def get_vector_store():
 
 
 def build_chain():
-    retriever = get_vector_store().as_retriever(search_kwargs={"k", 4})
+    retriever = get_vector_store().as_retriever(search_kwargs={"k": 4})
     llm = ChatOpenAI(model=CHAT_MODEL)
 
-    rewrite_chain = rewrite_prompt | llm | StrOutputParser
+    rewrite_chain = rewrite_prompt | llm | StrOutputParser()
+
     # A function used as a step may return a runnable; LangChain then invokes
     # that runnable with the same input. This lets us skip the rewrite LLM call
     # on the first question, when there's no history to resolve.
+    def standalone_question(x):
+        if not x["chat_history"]:
+            return x["question"]
+        return rewrite_chain
 
+    answer_chain = (
+            RunnablePassthrough.assign(context=lambda x: format_docs(x["docs"]))
+            | answer_prompt
+            | llm
+            | StrOutputParser()
+    )
+
+    return (
+            RunnablePassthrough.assign(standalone=standalone_question)
+            | RunnablePassthrough.assign(docs=itemgetter("standalone") | retriever)
+            | RunnablePassthrough.assign(answer=answer_chain)
+    )
+
+
+if __name__ == "__main__":
+    chain = build_chain()
+    chat_history = []
+    while True:
+        query = input("Ask your questions here (or type 'exit' to exit): \n")
+        if query == "exit":
+            break
+        result = chain.invoke({"question": query, "chat_history": chat_history})
+        chat_history.append(HumanMessage(content=query))
+        chat_history.append(AIMessage(content=result["answer"]))
+
+        sources = sorted({Path(doc.metadata["source"]).name for doc in result["docs"]})
+        print(f"\n(searched for: {result['standalone']})")
+        print(f"\nAnswer:\n{result['answer']}\n\nSources: {', '.join(sources)}\n")
