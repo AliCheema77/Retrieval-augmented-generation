@@ -134,6 +134,7 @@ def build_chain():
 
 if __name__ == "__main__":
     chain = build_chain()
+    print(chain.get_graph().print_ascii())
     chat_history = []
     while True:
         query = input("Ask your questions here (or type 'exit' to quit)\n")
