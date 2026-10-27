@@ -117,4 +117,47 @@ def get_vector_store(chunks):
         persist_directory=str(CHROMA_DIR)
     )
 
+    if not vector_store.get(limit=1)["ids"]:
+        vector_store.add_documents(chunks)
+        print(f"Indexed {len(chunks)} chunks.")
+
+    return vector_store
+
+
+def build_graph():
+    chunks = load_chunks()
+
+    bm25_retriever = BM25Retriever.from_documents(chunks, k=6)
+    vector_retriever = get_vector_store(chunks).as_retriever(search_kwargs={"k": 6})
+    hybrid_retriever = EnsembleRetriever(
+        retrievers=[bm25_retriever, vector_retriever],
+        weights=[0.5, 0.5]
+    )
+    reranker = CrossEncoderReranker(
+        model=HuggingFaceCrossEncoder(model_name=RERANK_MODEL),
+        top_n=FINAL_K
+    )
+
+    llm = ChatOpenAI(model=CHAT_MODEL)
+    rewrite_chain = rewrite_prompt | llm | StrOutputParser()
+    expand_chain = expand_prompt | llm.with_structured_output(SearchQueries)
+    answer_chain = answer_prompt | llm | StrOutputParser()
+
+    # Each node reads what it needs from the state and returns only the keys it
+    # updates. LangGraph merges that into the state, just like .assign did.
+
+    def rewrite(state: RAGState):
+        standalone = rewrite_chain.invoke(
+            {"question": state["question"], "chat_history": state["chat_history"]}
+        )
+        return {"standalone": standalone}
+
+    def expand(state: RAGState):
+        standalone = state.get("standalone", state["question"])
+        result = expand_chain.invoke({"standalone": standalone})
+        return {"standalone": standalone, "queries": [standalone, *result.queries]}
+
+    # def retriever(state: RAGState):
+
+
 
