@@ -113,7 +113,7 @@ def get_vector_store(chunks):
     embeddings = OpenAIEmbeddings(model=EMBEDDING_MODEL)
     vector_store = Chroma(
         collection_name="documents",
-        embedding_func=embeddings,
+        embedding_function=embeddings,
         persist_directory=str(CHROMA_DIR)
     )
 
@@ -157,7 +157,67 @@ def build_graph():
         result = expand_chain.invoke({"standalone": standalone})
         return {"standalone": standalone, "queries": [standalone, *result.queries]}
 
-    # def retriever(state: RAGState):
+    def retrieve(state: RAGState):
+        return {"rankings": hybrid_retriever.batch(state["queries"])}
+
+    def fuse(state: RAGState):
+        return {"candidates": reciprocal_rank_fusion(state["rankings"])}
+
+    def rerank(state: RAGState):
+        return {"docs": reranker.compress_documents(state["candidates"], state["standalone"])}
+
+    def generate(state: RAGState):
+        answer = answer_chain.invoke(
+            {
+                "context": format_docs(state["docs"]),
+                "chat_history": state["chat_history"],
+                "question": state["question"],
+            }
+        )
+        return {"answer": answer}
+
+    def route_start(state: RAGState):
+        return "rewrite" if state["chat_history"] else "expand"
+
+    graph = StateGraph(RAGState)
+
+    graph.add_node("rewrite", rewrite)
+    graph.add_node("expand", expand)
+    graph.add_node("retrieve", retrieve)
+    graph.add_node("fuse", fuse)
+    graph.add_node("rerank", rerank)
+    graph.add_node("generate", generate)
+
+    graph.add_conditional_edges(START, route_start, ["rewrite", "expand"])
+    graph.add_edge("rewrite", "expand")
+    graph.add_edge("expand", "retrieve")
+    graph.add_edge("retrieve", "fuse")
+    graph.add_edge("fuse", "rerank")
+    graph.add_edge("rerank", "generate")
+    graph.add_edge("generate", END)
+
+    return graph.compile()
+
+
+if __name__ == "__main__":
+    app = build_graph()
+    app.get_graph().print_ascii()
+
+    chat_history = []
+    while True:
+        query = input("Ask your questions here (or type 'exit' to quit)\n")
+        if query.lower() == "exit":
+            break
+        result = app.invoke({"question": query, "chat_history": chat_history})
+
+        chat_history.append(HumanMessage(content=query))
+        chat_history.append(AIMessage(content=result["answer"]))
+
+        sources = sorted({Path(doc.metadata["source"]).name for doc in result["docs"]})
+        print("\n(searched for:)")
+        for q in result["queries"]:
+            print(f"  - {q}")
+        print(f"\nAnswer:\n{result['answer']}\n\nSources: {', '.join(sources)}\n")
 
 
 
