@@ -1,0 +1,70 @@
+ALI ASAD ULLAH
+Full Stack Developer
+Lahore, Punjab, Pakistan | +92 323 7092316 | asadullahcheema77@gmail.com
+https://linkedin.com/in/alicheema77 | https://github.com/AliCheema77
+PROFESSIONAL SUMMARY
+Backend-focused Full Stack Developer with 6+ years building and scaling production Python services end-to-end.
+Specialized in REST API design with Django, Django REST Framework, FastAPI, and Flask; relational schema design and
+query optimization on PostgreSQL and MySQL; and large-scale data ingestion and transformation pipelines.
+Comfortable owning features through to the front end with React and Next.js, and experienced supporting live
+production systems for uptime and data accuracy across cross-functional, distributed teams.
+TECHNICAL SKILLS
+Backend: Python, Django, Django REST Framework, FastAPI, Flask, REST API design, OAuth/JWT authentication,
+WebSockets (Django Channels), third-party integrations, microservices, Celery
+Databases & Data: PostgreSQL, MySQL, MongoDB, Redis, Elasticsearch, query optimization and indexing, data
+ingestion pipelines, ETL, Kafka, RabbitMQ, Pandas, NumPy
+Frontend: React, Next.js, Angular, TypeScript, JavaScript, Tailwind CSS, Context API, component architecture,
+responsive design, HTML5, CSS
+Infrastructure & Tools: Linux, Docker, Jenkins CI/CD, AWS S3, Git, GitHub/GitLab, Nginx, unit testing, Agile/Scrum,
+code review, system design
+AI: LLM API integration (Claude, Gemini), Generative AI, Model Context Protocol (MCP), Agentic AI development
+PROFESSIONAL EXPERIENCE
+TechnoGenics SMC (Pvt) Ltd | Lahore, Pakistan
+Software Engineer
+Aug 2024 – Jul 2026
+• Built and maintained backend REST APIs in Python (FastAPI, Flask) for StrikeReady, an enterprise cybersecurity
+platform serving 100+ enterprise customers.
+• Designed data ingestion, processing, and transformation pipelines that normalize threat intelligence from 8
+external feeds into real-time detection workflows.
+• Developed client-facing interfaces in Angular and TypeScript, owning features end-to-end from UI through API
+integration and deployment.
+• Reduced average API response time by 30% through query optimization and indexing; mentored junior
+developers through code reviews and supported live production systems for uptime and data accuracy.
+Merik Solutions | Islamabad, Pakistan
+Software Engineer
+Jul 2023 – Jul 2024
+• Engineered an enterprise healthcare management system on Django REST Framework, designing a modular
+backend architecture that reduced feature delivery time by 15%.
+• Cut API response latency by 50% through database query tuning, indexing strategy, and response payload
+restructuring.
+• Integrated external APIs for patient management and reporting; resolved production incidents in real time and
+contributed to code reviews and system design.Rapidev | NSTP, NUST Islamabad, Pakistan
+Python Developer
+Jul 2022 – Jul 2023
+• Developed backend services, REST APIs, and real-time features (Django Channels / WebSockets) in Python and
+Django for large-scale operational and planning systems deployed in secure, on-premises client environments.
+• Built PostgreSQL-backed features across core planning and scheduling modules; contributed to backend
+architecture decisions and peer code reviews.
+Enigmatix (Pvt) Ltd | Bahawalpur, Pakistan
+Backend Developer (Python / Django)
+May 2020 – Jul 2022
+• Built PORTpass, a patient vaccination records platform on Django REST Framework and PostgreSQL, with secure
+authentication and reporting modules that improved data retrieval efficiency by 20%.
+• Engineered a WhatsApp chatbot using Django and the Twilio API supporting text and multimedia exchange,
+sustaining average response time under 2 seconds.
+• Shipped features across multiple web applications and resolved production defects under tight deadlines,
+maintaining service availability for active users.
+PROJECTS
+Trendoes — Full-Stack E-Commerce Platform | trendoes.com
+Next.js / React / Django
+• Delivered a live commercial storefront end-to-end for a retail client, building both the React/Next.js frontend and
+the Django REST backend on PostgreSQL.
+• Implemented client-side state with React Context API across cart, wishlist, product comparison, and coupon
+flows; applied server-side rendering and Next.js image optimization for load performance and SEO.
+• Built responsive, mobile-first UI in Tailwind CSS covering authentication, checkout, order tracking, and search;
+integrated Stripe and other third-party services against Django REST APIs.
+EDUCATION
+Master of Computer Science (MCS) — The Islamia University of Bahawalpur
+BSc in Computer Science — The Islamia University of Bahawalpur
+Oct 2018 – Aug 2020
+2016 – 2018
