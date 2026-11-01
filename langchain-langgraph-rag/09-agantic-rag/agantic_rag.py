@@ -64,7 +64,7 @@ def get_vector_store(chunks):
 
     if not vector_store.get(limit=1)["ids"]:
         vector_store.add_documents(chunks)
-        print(f"Indexed {len(chunks)} chunks.")
+        # print(f"Indexed {len(chunks)} chunks.")
 
     return vector_store
 
