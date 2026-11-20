@@ -11,3 +11,12 @@ from langchain_community.retrievers import BM25Retriever
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from mcp.server.fastmcp import FastMCP
+
+load_dotenv()
+
+SCRIPT_DIR = Path(__file__).parent
+DOCS_DIR = SCRIPT_DIR / "documents"
+CHROMA_DIR = SCRIPT_DIR / "chroma_store"
+EMBEDDING_MODEL = "text-embedding-3-small"
+RERANK_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+FINAL_K = 4
