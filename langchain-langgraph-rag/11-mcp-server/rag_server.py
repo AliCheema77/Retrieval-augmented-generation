@@ -20,3 +20,20 @@ CHROMA_DIR = SCRIPT_DIR / "chroma_store"
 EMBEDDING_MODEL = "text-embedding-3-small"
 RERANK_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 FINAL_K = 4
+
+
+def format_docs(docs):
+    return "\n\n----\n\n".join(
+        f"[{Path(doc.metadata['source']).name}]\n{doc.page_content}" for doc in docs
+    )
+
+
+def load_chunks():
+    loader = DirectoryLoader(
+        str(DOCS_DIR),
+        glob="*.txt",
+        loader_cls=TextLoader,
+        loader_kwargs={"encoding": "utf-8"},
+    )
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    return splitter.split_documents(loader.load())
