@@ -37,3 +37,19 @@ def load_chunks():
     )
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     return splitter.split_documents(loader.load())
+
+
+def get_vector_store(chunks):
+    embeddings = OpenAIEmbeddings(model=EMBEDDING_MODEL)
+    vector_store = Chroma(
+        collection_name="documents",
+        embedding_function=embeddings,
+        persist_directory=str(CHROMA_DIR),
+    )
+
+    if not vector_store.get(limit=1)["ids"]:
+        vector_store.add_documents(chunks)
+        # stdout is the MCP channel in stdio mode, so logs must go to stderr.
+        print(f"Indexed {len(chunks)} chunks.", file=sys.stderr)
+
+    return vector_store
