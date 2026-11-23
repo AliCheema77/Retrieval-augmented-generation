@@ -53,3 +53,18 @@ def get_vector_store(chunks):
         print(f"Indexed {len(chunks)} chunks.", file=sys.stderr)
 
     return vector_store
+
+
+chunks = load_chunks()
+bm25_retriever = BM25Retriever.from_documents(chunks, k=6)
+vector_retriever = get_vector_store(chunks).as_retriever(search_kwargs={"k": 6})
+hybrid_retriever = EnsembleRetriever(
+    retrievers=[bm25_retriever, vector_retriever],
+    weights=[0.5, 0.5],
+)
+reranker = CrossEncoderReranker(
+    model=HuggingFaceCrossEncoder(model_name=RERANK_MODEL),
+    top_n=FINAL_K,
+)
+
+mcp = FastMCP("rag-documents")
