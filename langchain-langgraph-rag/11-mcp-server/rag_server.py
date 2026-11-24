@@ -68,3 +68,13 @@ reranker = CrossEncoderReranker(
 )
 
 mcp = FastMCP("rag-documents")
+
+
+@mcp.tool()
+def search_documents(query: str) -> str:
+    """Search the document collection (a resume and a company handbook) and return
+    the most relevant passages, each labelled with its source file. Use a short,
+    specific search query."""
+    candidates = hybrid_retriever.invoke(query)
+    docs = reranker.compress_documents(candidates, query)
+    return format_docs(docs)
