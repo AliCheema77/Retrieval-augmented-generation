@@ -78,3 +78,12 @@ def search_documents(query: str) -> str:
     candidates = hybrid_retriever.invoke(query)
     docs = reranker.compress_documents(candidates, query)
     return format_docs(docs)
+
+
+@mcp.resource("docs://{filename}")
+def read_document(filename: str) -> str:
+  """The full text of one document from the collection."""
+  path = (DOCS_DIR / filename).resolve()
+  if path.parent != DOCS_DIR.resolve() or not path.is_file():
+      raise ValueError(f"Unknown document: {filename}")
+  return path.read_text(encoding="utf-8")
